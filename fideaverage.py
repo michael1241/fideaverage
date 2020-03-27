@@ -8,6 +8,7 @@ import time
 
 average_months = 12 #months
 category = 'RTNG' #standard
+games = "GMS" #standard games
 top = 60 #players
 
 norges_search = 'https://www.norgesratinga.no/?clubFilter=all&limit=1000000&period=MAR20&page=KadettA&flag=&search=&ratingType=&federation='
@@ -18,10 +19,11 @@ def average_FIDE(fide_id):
     table = soup.findAll('table', {'class': 'profile-table profile-table_chart-table'})
     df = pd.read_html(str(table))[0]
     avg = df.head(average_months)[category].mean().round()
+    count = df.head(average_months)[games].sum()
 
     player = soup.find('div', {'class': 'col-lg-8 profile-top-title'}).get_text()
 
-    return player, avg
+    return player, avg, count
 
 def get_Vikings(search):
     html = requests.get(search)
@@ -36,10 +38,10 @@ output = {}
 players = get_Vikings(norges_search)
 
 for player in players[:top]:
-    p, a = average_FIDE(player)
-    output[p] = a
+    p, a, c = average_FIDE(player)
+    output[p] = a, c
     time.sleep(1)
 
-for p, a in output.items():
-    print(p, a)
+for p, vals in output.items():
+    print(p, vals)
 
