@@ -10,6 +10,8 @@ average_months = 12 #months
 category = 'RTNG' #standard
 games = "GMS" #standard games
 top = 60 #players
+max_b_year = 2004
+min_b_year = 1997
 
 norges_search = 'https://www.norgesratinga.no/?clubFilter=all&limit=1000000&period=MAR20&page=KadettA&flag=&search=&ratingType=&federation='
 
@@ -23,6 +25,10 @@ def average_FIDE(fide_id):
 
     player = soup.find('div', {'class': 'col-lg-8 profile-top-title'}).get_text()
 
+    b_year_section = soup.find(text=re.compile('B-Year')).parent.parent.text
+    b_year = int(re.search(r"\d+", b_year_section).group(0))
+    if b_year > max_b_year or b_year < min_b_year:
+        return None
     return player, avg, count
 
 def get_Vikings(search):
@@ -38,9 +44,13 @@ output = {}
 players = get_Vikings(norges_search)
 
 for player in players[:top]:
-    p, a, c = average_FIDE(player)
-    output[p] = a, c
-    time.sleep(1)
+    vals = average_FIDE(player)
+    if vals:
+        p, a, c = vals
+        output[p] = a, c
+        time.sleep(1)
+    else:
+        continue
 
 for p, vals in output.items():
     print(p, vals)
